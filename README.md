@@ -26,7 +26,7 @@ A command-line contact management system built in Python, backed by MySQL, with 
 
 ```
 AddressBook/
-├── Address_Book_6_8_12.py   # Main application
+├── Address_Book.py          # Main application
 ├── schema.sql               # Database schema (run once to set up tables)
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # Environment variable template
@@ -39,7 +39,7 @@ AddressBook/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/AddressBook.git
+git clone https://github.com/Barman-Zarei/AddressBook.git
 cd AddressBook
 ```
 
@@ -62,7 +62,7 @@ mysql -u root -p < schema.sql
 Copy the example file and fill in your own values:
 
 ```bash
-cp .env.example .env
+cp excample.env
 ```
 
 Edit `.env`:
@@ -77,7 +77,7 @@ DB_NAME=address_book
 ### 5. Run the app
 
 ```bash
-python Address_Book_6_8_12.py
+python Address_Book.py
 ```
 
 ## Usage
