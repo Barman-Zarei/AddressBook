@@ -19,7 +19,6 @@ jobs:
           - os: macos-latest
             artifact_name: addressbook-macos
             separator: ":"
-
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
@@ -55,7 +54,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r requirements.txt
+          python -m pip install -r addressbook_app/requirements.txt
           python -m pip install pyinstaller==6.10.0
 
       - name: Verify Kivy imports before building (Linux/macOS)
@@ -72,14 +71,15 @@ jobs:
           KIVY_GL_BACKEND: mock
         run: |
           set -o pipefail
-          pyinstaller --name digishop --onefile --windowed --clean --noconfirm \
-            --add-data "assets${{ matrix.separator }}assets" main.py 2>&1 | tee pyinstaller_full.log
+          cd addressbook_app
+          pyinstaller --name AddressBook --onefile --windowed --clean --noconfirm \
+            --add-data "../assets${{ matrix.separator }}assets" main.py 2>&1 | tee pyinstaller_full.log
 
       - name: Install Python dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r addressbook_app/requirements.txt
           pip install pyinstaller
 
       - name: Install Windows Kivy dependencies
@@ -92,14 +92,15 @@ jobs:
         env:
           KIVY_GL_BACKEND: mock
         run: |
-          pyinstaller --name digishop --onefile --windowed --add-data "assets${{ matrix.separator }}assets" main.py
+          cd addressbook_app
+          pyinstaller --name AddressBook --onefile --windowed --add-data "../assets${{ matrix.separator }}assets" main.py
 
       - name: Upload artifact (Linux/macOS, strict)
         if: always() && runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/*
+          path: addressbook_app/dist/*
           if-no-files-found: error
 
       - name: Upload artifact (Windows, lenient)
@@ -107,12 +108,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/*
+          path: addressbook_app/dist/*
 
       - name: Upload PyInstaller full log (Linux/macOS only)
         if: always() && runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: pyinstaller-log-${{ matrix.artifact_name }}
-          path: pyinstaller_full.log
+          path: addressbook_app/pyinstaller_full.log
           if-no-files-found: ignore
