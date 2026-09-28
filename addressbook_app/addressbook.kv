@@ -1,0 +1,514 @@
+#:import dp kivy.metrics.dp
+
+# ---------- Theme ----------
+#:set C_BG (0.96, 0.97, 0.99, 1)
+#:set C_PRIMARY (0.42, 0.36, 0.91, 1)
+#:set C_TEXT (0.17, 0.19, 0.25, 1)
+#:set C_MUTED (0.5, 0.53, 0.6, 1)
+#:set C_DANGER (0.94, 0.35, 0.35, 1)
+#:set C_TEAL (0.0, 0.72, 0.58, 1)
+#:set C_ORANGE (1.0, 0.62, 0.26, 1)
+#:set C_BORDER (0.85, 0.87, 0.92, 1)
+#:set C_GLASS (1, 1, 1, 0.22)
+
+# ---------- Reusable widgets ----------
+<AppButton>:
+    background_normal: ''
+    background_down: ''
+    background_disabled_normal: ''
+    background_disabled_down: ''
+    background_color: 0, 0, 0, 0
+    color: 1, 1, 1, 1
+    disabled_color: 1, 1, 1, 0.7
+    bold: True
+    font_size: '16sp'
+    size_hint_y: None
+    height: dp(48)
+    canvas.before:
+        Color:
+            rgba: (self.bg_color[0], self.bg_color[1], self.bg_color[2], self.bg_color[3] * (0.6 if self.disabled else 1))
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [self.corner]
+        Color:
+            rgba: (0, 0, 0, 0.18) if self.state == 'down' else (0, 0, 0, 0)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [self.corner]
+
+<AppInput>:
+    multiline: False
+    write_tab: False
+    background_normal: ''
+    background_active: ''
+    background_color: 0, 0, 0, 0
+    foreground_color: C_TEXT
+    hint_text_color: C_MUTED
+    cursor_color: C_PRIMARY
+    font_size: '16sp'
+    size_hint_y: None
+    height: dp(48)
+    padding: [dp(14), (self.height - self.line_height) / 2]
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(12)]
+        Color:
+            rgba: C_PRIMARY if self.focus else C_BORDER
+        Line:
+            rounded_rectangle: (self.x, self.y, self.width, self.height, dp(12))
+            width: 1.4
+        Color:
+            rgba: self.foreground_color if self.text else self.hint_text_color
+
+<Card>:
+    canvas.before:
+        Color:
+            rgba: 0, 0, 0, 0.06
+        RoundedRectangle:
+            pos: self.x, self.y - dp(2)
+            size: self.size
+            radius: [dp(16)]
+        Color:
+            rgba: 1, 1, 1, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(16)]
+
+<Avatar>:
+    size_hint: None, None
+    size: dp(52), dp(52)
+    pos_hint: {'center_y': .5}
+    bold: True
+    font_size: '22sp'
+    color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: self.bg_color
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<HeaderBar@BoxLayout>:
+    size_hint_y: None
+    height: dp(64)
+    padding: [dp(14), dp(8)]
+    spacing: dp(8)
+    canvas.before:
+        Color:
+            rgba: C_PRIMARY
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<StatusLabel@Label>:
+    color: C_DANGER
+    font_size: '14sp'
+    size_hint_y: None
+    height: max(dp(22), self.texture_size[1]) if self.text else dp(0)
+    text_size: self.width, None
+    halign: 'center'
+
+<FieldLabel@Label>:
+    color: C_MUTED
+    font_size: '13sp'
+    bold: True
+    size_hint_y: None
+    height: dp(20)
+    text_size: self.width, None
+    halign: 'left'
+    valign: 'bottom'
+
+<HeaderButton@AppButton>:
+    bg_color: C_GLASS
+    size_hint_x: None
+    width: dp(86)
+    height: dp(38)
+    font_size: '14sp'
+    pos_hint: {'center_y': .5}
+
+# ---------- Contact card ----------
+<ContactCard>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(92)
+    padding: dp(12)
+    spacing: dp(12)
+    Avatar:
+        text: root.initial
+        bg_color: root.avatar_color
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(2)
+        Label:
+            text: root.name
+            bold: True
+            font_size: '17sp'
+            color: C_TEXT
+            halign: 'left'
+            valign: 'bottom'
+            text_size: self.size
+            shorten: True
+            shorten_from: 'right'
+        Label:
+            text: root.subtitle
+            font_size: '14sp'
+            color: C_MUTED
+            halign: 'left'
+            valign: 'top'
+            text_size: self.size
+            shorten: True
+            shorten_from: 'right'
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: None
+        width: dp(68)
+        spacing: dp(6)
+        AppButton:
+            text: 'Edit'
+            bg_color: C_TEAL
+            height: dp(30)
+            font_size: '13sp'
+            on_release: root.edit()
+        AppButton:
+            text: 'Delete'
+            bg_color: C_DANGER
+            height: dp(30)
+            font_size: '13sp'
+            on_release: root.delete()
+
+# ---------- Login ----------
+<LoginScreen>:
+    name: 'login'
+    canvas.before:
+        Color:
+            rgba: C_BG
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: dp(190)
+            orientation: 'vertical'
+            padding: dp(24)
+            canvas.before:
+                Color:
+                    rgba: C_PRIMARY
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                text: 'AddressBook'
+                font_size: '36sp'
+                bold: True
+                color: 1, 1, 1, 1
+            Label:
+                text: 'Everyone you care about, in one place'
+                font_size: '14sp'
+                color: 1, 1, 1, 0.85
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(24)
+                spacing: dp(12)
+                Label:
+                    text: 'Welcome back'
+                    font_size: '22sp'
+                    bold: True
+                    color: C_TEXT
+                    size_hint_y: None
+                    height: dp(36)
+                    text_size: self.width, None
+                    halign: 'left'
+                AppInput:
+                    id: username_input
+                    hint_text: 'Username'
+                    on_text_validate: password_input.focus = True
+                AppInput:
+                    id: password_input
+                    hint_text: 'Password'
+                    password: True
+                    on_text_validate: root.do_login()
+                StatusLabel:
+                    text: root.status
+                AppButton:
+                    text: 'Signing in...' if root.busy else 'Log in'
+                    disabled: root.busy
+                    on_release: root.do_login()
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(40)
+                    Label:
+                        text: 'New here?'
+                        color: C_MUTED
+                    AppButton:
+                        text: 'Create an account'
+                        bg_color: 0, 0, 0, 0
+                        color: C_PRIMARY
+                        font_size: '15sp'
+                        height: dp(40)
+                        on_release: app.go('register')
+
+# ---------- Register ----------
+<RegisterScreen>:
+    name: 'register'
+    canvas.before:
+        Color:
+            rgba: C_BG
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: 'vertical'
+        HeaderBar:
+            HeaderButton:
+                text: 'Back'
+                on_release: app.go('login')
+            Label:
+                text: 'Create account'
+                font_size: '20sp'
+                bold: True
+                color: 1, 1, 1, 1
+            Widget:
+                size_hint_x: None
+                width: dp(86)
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(24)
+                spacing: dp(10)
+                FieldLabel:
+                    text: 'Username *'
+                AppInput:
+                    id: username_input
+                    hint_text: 'Choose a username'
+                    on_text_validate: email_input.focus = True
+                FieldLabel:
+                    text: 'Email (optional)'
+                AppInput:
+                    id: email_input
+                    hint_text: 'you@example.com'
+                    input_type: 'mail'
+                    on_text_validate: password_input.focus = True
+                FieldLabel:
+                    text: 'Password *'
+                AppInput:
+                    id: password_input
+                    hint_text: 'At least 6 characters'
+                    password: True
+                    on_text_validate: confirm_input.focus = True
+                FieldLabel:
+                    text: 'Confirm password *'
+                AppInput:
+                    id: confirm_input
+                    hint_text: 'Repeat your password'
+                    password: True
+                    on_text_validate: root.do_register()
+                StatusLabel:
+                    text: root.status
+                AppButton:
+                    text: 'Creating account...' if root.busy else 'Sign up'
+                    bg_color: C_TEAL
+                    disabled: root.busy
+                    on_release: root.do_register()
+
+# ---------- Contact list ----------
+<ContactListScreen>:
+    name: 'contacts'
+    canvas.before:
+        Color:
+            rgba: C_BG
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    FloatLayout:
+        BoxLayout:
+            orientation: 'vertical'
+            HeaderBar:
+                height: dp(72)
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        text: 'My Contacts'
+                        font_size: '22sp'
+                        bold: True
+                        color: 1, 1, 1, 1
+                        halign: 'left'
+                        valign: 'bottom'
+                        text_size: self.size
+                    Label:
+                        text: root.count_text
+                        font_size: '13sp'
+                        color: 1, 1, 1, 0.85
+                        halign: 'left'
+                        valign: 'top'
+                        text_size: self.size
+                HeaderButton:
+                    text: 'Search'
+                    on_release: app.go('search')
+                HeaderButton:
+                    text: 'Account'
+                    on_release: app.show_account_popup()
+            StatusLabel:
+                text: root.status
+            ScrollView:
+                do_scroll_x: False
+                GridLayout:
+                    id: contact_grid
+                    cols: 1
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: [dp(14), dp(14), dp(14), dp(90)]
+                    spacing: dp(10)
+        Label:
+            text: root.empty_text
+            color: C_MUTED
+            font_size: '16sp'
+            halign: 'center'
+            size_hint: 0.8, None
+            height: dp(80)
+            text_size: self.width, None
+            pos_hint: {'center_x': .5, 'center_y': .45}
+        AppButton:
+            text: '+'
+            font_size: '32sp'
+            bg_color: C_ORANGE
+            corner: dp(30)
+            size_hint: None, None
+            size: dp(60), dp(60)
+            pos_hint: {'right': .95, 'y': .03}
+            on_release: app.open_editor()
+
+# ---------- Add / Edit ----------
+<AddEditContactScreen>:
+    name: 'edit'
+    canvas.before:
+        Color:
+            rgba: C_BG
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: 'vertical'
+        HeaderBar:
+            HeaderButton:
+                text: 'Back'
+                on_release: app.go('contacts')
+            Label:
+                text: root.title_text
+                font_size: '20sp'
+                bold: True
+                color: 1, 1, 1, 1
+            Widget:
+                size_hint_x: None
+                width: dp(86)
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(10)
+                FieldLabel:
+                    text: 'Full name *'
+                AppInput:
+                    id: name_input
+                    hint_text: 'e.g. Sara Ahmadi'
+                    on_text_validate: phone_input.focus = True
+                FieldLabel:
+                    text: 'Phone *'
+                AppInput:
+                    id: phone_input
+                    hint_text: 'e.g. 09121234567'
+                    input_type: 'tel'
+                    on_text_validate: email_input.focus = True
+                FieldLabel:
+                    text: 'Email'
+                AppInput:
+                    id: email_input
+                    hint_text: 'name@example.com'
+                    input_type: 'mail'
+                    on_text_validate: city_input.focus = True
+                FieldLabel:
+                    text: 'City'
+                AppInput:
+                    id: city_input
+                    hint_text: 'e.g. Tehran'
+                    on_text_validate: address_input.focus = True
+                FieldLabel:
+                    text: 'Address'
+                AppInput:
+                    id: address_input
+                    hint_text: 'Street, building...'
+                    on_text_validate: root.save()
+                StatusLabel:
+                    text: root.status
+                AppButton:
+                    text: 'Saving...' if root.busy else 'Save contact'
+                    bg_color: C_TEAL
+                    disabled: root.busy
+                    on_release: root.save()
+
+# ---------- Search ----------
+<SearchScreen>:
+    name: 'search'
+    canvas.before:
+        Color:
+            rgba: C_BG
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    FloatLayout:
+        BoxLayout:
+            orientation: 'vertical'
+            HeaderBar:
+                HeaderButton:
+                    text: 'Back'
+                    width: dp(70)
+                    on_release: app.go('contacts')
+                AppInput:
+                    id: query_input
+                    hint_text: 'Name, phone or email'
+                    height: dp(42)
+                    size_hint_y: None
+                    pos_hint: {'center_y': .5}
+                    on_text_validate: root.do_search()
+                HeaderButton:
+                    text: '...' if root.busy else 'Go'
+                    width: dp(60)
+                    on_release: root.do_search()
+            StatusLabel:
+                text: root.status
+            ScrollView:
+                do_scroll_x: False
+                GridLayout:
+                    id: results_grid
+                    cols: 1
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(14)
+                    spacing: dp(10)
+        Label:
+            text: root.empty_text
+            color: C_MUTED
+            font_size: '16sp'
+            halign: 'center'
+            size_hint: 0.8, None
+            height: dp(60)
+            text_size: self.width, None
+            pos_hint: {'center_x': .5, 'center_y': .5}

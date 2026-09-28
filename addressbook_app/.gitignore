@@ -1,0 +1,5 @@
+session.json
+__pycache__/
+*.pyc
+.buildozer/
+bin/
