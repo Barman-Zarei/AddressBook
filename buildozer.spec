@@ -2,7 +2,7 @@
 title = AddressBook
 package.name = addressbook
 package.domain = org.barmanzarei
-source.dir = .
+source.dir = addressbook_app
 source.include_exts = py,png,jpg,kv,atlas,ttf
 source.exclude_dirs = .github,.git,venv,bin,tests,__pycache__,.buildozer
 version = 7.9.0
