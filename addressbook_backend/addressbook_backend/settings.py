@@ -32,9 +32,12 @@ INSTALLED_APPS = [
 
     "accounts",
     "contacts",
+    "ratelimiter",
+    "backups",
 ]
 
 MIDDLEWARE = [
+    "ratelimiter.middleware.RateLimitMiddleware",   # first: reject abusive traffic cheaply
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -110,4 +113,49 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
+}
+
+
+# --- Cache (rate-limit counters) ---
+# With several gunicorn workers / instances the counters MUST live in a shared cache:
+# set REDIS_URL (Render Key Value / Redis). Without it each worker counts on its own.
+if os.getenv("REDIS_URL"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.getenv("REDIS_URL"),
+        }
+    }
+else:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
+# --- Rate limiting (see ratelimiter/conf.py for every option and the default rules) ---
+RATE_LIMIT = {
+    "ENABLED": os.getenv("RATE_LIMIT_ENABLED", "True") == "True",
+    "TRUSTED_PROXY_COUNT": int(os.getenv("RATE_LIMIT_TRUSTED_PROXIES", "1")),
+    "ALLOWLIST": [x for x in os.getenv("RATE_LIMIT_ALLOWLIST", "").split(",") if x],
+    "BLOCKLIST": [x for x in os.getenv("RATE_LIMIT_BLOCKLIST", "").split(",") if x],
+}
+
+# --- Database backups (see backups/conf.py) ---
+def _hhmm(text):
+    hour, minute = text.split(":")
+    return int(hour), int(minute)
+
+
+_restore_hour, _restore_minute = _hhmm(os.getenv("BACKUP_RESTORE_TIME", "12:00"))
+BACKUP = {
+    "STORAGE": os.getenv("BACKUP_STORAGE", "local"),
+    "LOCAL_DIR": os.getenv("BACKUP_LOCAL_DIR", str(BASE_DIR / "backups_data")),
+    "INTERVAL_MINUTES": float(os.getenv("BACKUP_INTERVAL_MINUTES", "30")),
+    "KEEP_RECENT_HOURS": int(os.getenv("BACKUP_KEEP_RECENT_HOURS", "48")),
+    "KEEP_DAILY_DAYS": int(os.getenv("BACKUP_KEEP_DAILY_DAYS", "35")),
+    "RESTORE_ENABLED": os.getenv("BACKUP_RESTORE_ENABLED", "False") == "True",
+    "RESTORE_DAY": int(os.getenv("BACKUP_RESTORE_DAY", "27")),
+    "RESTORE_HOUR": _restore_hour,
+    "RESTORE_MINUTE": _restore_minute,
+    "CRON_TOKEN": os.getenv("BACKUP_CRON_TOKEN", ""),
+    "S3_BUCKET": os.getenv("BACKUP_S3_BUCKET", ""),
+    "S3_PREFIX": os.getenv("BACKUP_S3_PREFIX", "addressbook-backups/"),
+    "S3_ENDPOINT_URL": os.getenv("BACKUP_S3_ENDPOINT_URL", ""),
 }
